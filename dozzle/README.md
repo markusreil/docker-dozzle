@@ -35,9 +35,10 @@ this image needs none — documented here).
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `DOZZLE_HOSTNAME` | `dozzle` | Name shown in the header / multi-host menu |
+| `DOZZLE_HOSTNAME` | `dozzle` | Display-only name in the header / multi-host menu; does not change the proxy vhost (`dozzle.<BASE_DOMAIN>`) |
 | `DOZZLE_LEVEL` | `info` | Log verbosity: `debug` \| `info` \| `warn` \| `error` |
 | `DOZZLE_AUTH_PROVIDER` | `none` | `none` or `simple` (see below) |
+| `DOZZLE_GEN_SELF_SIGNED_CERT` | `false` | Self-signed TLS opt-in for the LAN proxy variant; maps to the proxy's `GEN_SELF_SIGNED_CERT`. |
 
 Deliberately NOT set: `DOZZLE_ENABLE_ACTIONS`, `DOZZLE_ENABLE_SHELL`. Both
 grant control over containers (start/stop/recreate, arbitrary shell access);
@@ -48,9 +49,11 @@ https://dozzle.dev/guide/shell.
 ## Authentication
 
 Default posture is LAN-only (`DOZZLE_AUTH_PROVIDER=none`), consistent with the
-other projects in this workspace: access is trusted to the LAN. This
-deployment is HTTP-only — it declares no TLS opt-in. Dozzle's own docs say to
-put it behind authentication whenever it is reachable from the public
+other projects in this workspace: access is trusted to the LAN. The service
+declares both proxy TLS opt-ins (`ACME_HOST` and `GEN_SELF_SIGNED_CERT`); with
+`DOZZLE_GEN_SELF_SIGNED_CERT=false` (the default) a LAN cluster serves plain
+HTTP, while the internet-facing variant uses `ACME_HOST`. Dozzle's own docs say
+to put it behind authentication whenever it is reachable from the public
 internet — it grants full read access to every container's logs.
 
 To enable login with the built-in `simple` provider:

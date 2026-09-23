@@ -24,10 +24,15 @@ services:
       # nginx-proxy: the vhost is dozzle.<BASE_DOMAIN>; no host ports are
       # published, the proxy owns all public endpoints.
       VIRTUAL_HOST: *dozzle-host
-      # HTTP-only in every variant: no TLS opt-in is declared (neither
-      # ACME_HOST nor GEN_SELF_SIGNED_CERT), so the proxy serves this service
-      # over plain HTTP whether the cluster is LAN-only or internet-facing.
-      # Name shown in the dozzle header and multi-host menu.
+      # Both TLS opt-ins are declared so the proxy variant decides which one
+      # applies: ACME_HOST requests a real certificate (internet-facing
+      # variant), GEN_SELF_SIGNED_CERT requests a self-signed one (LAN
+      # variant). The self-signed opt-in is driven from .env and defaults to
+      # false, so a LAN cluster serves plain HTTP unless it is set true.
+      ACME_HOST: *dozzle-host
+      GEN_SELF_SIGNED_CERT: ${DOZZLE_GEN_SELF_SIGNED_CERT:-false}
+      # Display-only name shown in the dozzle header and multi-host menu. It
+      # does not change the proxy vhost, which is always dozzle.<BASE_DOMAIN>.
       DOZZLE_HOSTNAME: ${DOZZLE_HOSTNAME:-dozzle}
       # Log verbosity: debug | info | warn | error.
       DOZZLE_LEVEL: ${DOZZLE_LEVEL:-info}

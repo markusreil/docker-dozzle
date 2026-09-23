@@ -31,10 +31,14 @@ Ongoing rules for working in this repo. This is a summary — see
 
 ## Proxy contract
 
-- This service is **HTTP-only in every variant**: it declares `VIRTUAL_HOST`
-  and **no TLS opt-in**. Never declare a single TLS opt-in — a downstream
-  service must be variant-agnostic; if TLS is ever added, declare **both**
-  `ACME_HOST` and `GEN_SELF_SIGNED_CERT=true`.
+- The service declares **both** TLS opt-ins — `ACME_HOST` (real certificate,
+  honoured by the internet-facing variant) and `GEN_SELF_SIGNED_CERT`
+  (self-signed, honoured by the LAN variant) — so the proxy variant decides
+  which applies. Never declare only one: a lone opt-in pins the service to a
+  single variant.
+- `GEN_SELF_SIGNED_CERT` is driven from `.env` via
+  `DOZZLE_GEN_SELF_SIGNED_CERT` (default `false`). With it `false` a LAN
+  cluster serves plain HTTP; set it `true` for full variant-agnostic TLS.
 - Use the `ACME_*` spelling for every ACME variable; the `LETSENCRYPT_*` aliases
   are deprecated and must not be used.
 

@@ -38,10 +38,13 @@ viewer for Docker containers, one instance per docker host, behind an
    * `BASE_DOMAIN` — the root domain this host serves (e.g. `example.com`)
    * `DOZZLE_VERSION` — pinned upstream image tag (e.g. `v10.9.2`)
    * `TZ` — optional, default `UTC`
-   * `DOZZLE_HOSTNAME` — optional, name shown in the dozzle header
+   * `DOZZLE_HOSTNAME` — optional, display-only name shown in the dozzle header
+     (does not change the vhost `dozzle.<BASE_DOMAIN>`)
    * `DOZZLE_LEVEL` — optional, log verbosity, default `info`
    * `DOZZLE_AUTH_PROVIDER` — optional, `none` (default) or `simple`
      (see `dozzle/README.md`)
+   * `DOZZLE_GEN_SELF_SIGNED_CERT` — optional, self-signed TLS opt-in for a LAN
+     cluster, default `false`
 
 2. Sanity-check and start (no build step — the upstream image IS the service):
 
@@ -51,10 +54,11 @@ viewer for Docker containers, one instance per docker host, behind an
    docker compose ps
    ```
 
-3. Open `http://dozzle.<BASE_DOMAIN>`. This deployment is HTTP-only in every
-   variant: it declares no TLS opt-in (no `ACME_HOST`, no
-   `GEN_SELF_SIGNED_CERT`), so the proxy serves it over plain HTTP whether the
-   cluster is LAN-only or internet-facing.
+3. Open `http://dozzle.<BASE_DOMAIN>`. The service declares both proxy TLS
+   opt-ins: `ACME_HOST` gives an internet-facing cluster HTTPS, while the
+   self-signed path (`GEN_SELF_SIGNED_CERT`) is controlled by
+   `DOZZLE_GEN_SELF_SIGNED_CERT` and defaults to `false`, so a LAN cluster
+   serves plain HTTP unless you set it `true`.
 
 ## Operational notes
 
