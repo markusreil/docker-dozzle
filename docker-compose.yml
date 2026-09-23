@@ -4,8 +4,8 @@ name: dozzle
 # Published via nginx-proxy at dozzle.<BASE_DOMAIN>, where BASE_DOMAIN comes
 # from .env (e.g. localhost or example.com). The anchors are the single source
 # of truth for that hostname; the service references *dozzle-host for
-# VIRTUAL_HOST / LETSENCRYPT_HOST, and *dozzle-href feeds the Homepage
-# dashboard label. Change BASE_DOMAIN in .env and the whole stack moves.
+# VIRTUAL_HOST, and *dozzle-href feeds the Homepage dashboard label. Change
+# BASE_DOMAIN in .env and the whole stack moves.
 x-hosts:
   dozzle: &dozzle-host dozzle.${BASE_DOMAIN:?BASE_DOMAIN must be set in .env}
   # Scheme-prefixed public URL derived from the same anchor, used only by the
@@ -24,8 +24,9 @@ services:
       # nginx-proxy: the vhost is dozzle.<BASE_DOMAIN>; no host ports are
       # published, the proxy owns all public endpoints.
       VIRTUAL_HOST: *dozzle-host
-      VIRTUAL_PORT: "8080"
-      LETSENCRYPT_HOST: *dozzle-host
+      # HTTP-only in every variant: no TLS opt-in is declared (neither
+      # ACME_HOST nor GEN_SELF_SIGNED_CERT), so the proxy serves this service
+      # over plain HTTP whether the cluster is LAN-only or internet-facing.
       # Name shown in the dozzle header and multi-host menu.
       DOZZLE_HOSTNAME: ${DOZZLE_HOSTNAME:-dozzle}
       # Log verbosity: debug | info | warn | error.

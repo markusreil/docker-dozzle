@@ -51,8 +51,10 @@ viewer for Docker containers, one instance per docker host, behind an
    docker compose ps
    ```
 
-3. Open `http://dozzle.<BASE_DOMAIN>` (or `https://` once a certificate is
-   issued).
+3. Open `http://dozzle.<BASE_DOMAIN>`. This deployment is HTTP-only in every
+   variant: it declares no TLS opt-in (no `ACME_HOST`, no
+   `GEN_SELF_SIGNED_CERT`), so the proxy serves it over plain HTTP whether the
+   cluster is LAN-only or internet-facing.
 
 ## Operational notes
 

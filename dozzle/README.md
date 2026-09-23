@@ -48,10 +48,10 @@ https://dozzle.dev/guide/shell.
 ## Authentication
 
 Default posture is LAN-only (`DOZZLE_AUTH_PROVIDER=none`), consistent with the
-other projects in this workspace: nginx-proxy terminates TLS, and access is
-trusted to the LAN. Dozzle's own docs say to put it behind authentication
-whenever it is reachable from the public internet — it grants full read access
-to every container's logs.
+other projects in this workspace: access is trusted to the LAN. This
+deployment is HTTP-only — it declares no TLS opt-in. Dozzle's own docs say to
+put it behind authentication whenever it is reachable from the public
+internet — it grants full read access to every container's logs.
 
 To enable login with the built-in `simple` provider:
 
