@@ -1,0 +1,64 @@
+name: dozzle
+
+# --- Hostname scheme -------------------------------------------------------
+# Published via nginx-proxy at dozzle.<BASE_DOMAIN>, where BASE_DOMAIN comes
+# from .env (e.g. localhost or example.com). The anchors are the single source
+# of truth for that hostname; the service references *dozzle-host for
+# VIRTUAL_HOST / LETSENCRYPT_HOST, and *dozzle-href feeds the Homepage
+# dashboard label. Change BASE_DOMAIN in .env and the whole stack moves.
+x-hosts:
+  dozzle: &dozzle-host dozzle.${BASE_DOMAIN:?BASE_DOMAIN must be set in .env}
+  # Scheme-prefixed public URL derived from the same anchor, used only by the
+  # Homepage dashboard labels (homepage.href) below.
+  dozzle-href: &dozzle-href "http://dozzle.${BASE_DOMAIN}"
+
+services:
+  dozzle:
+    # Upstream image IS the service (spec rule 6): a single static Go binary
+    # on scratch (~20 MB), no build step. Tag pinned via DOZZLE_VERSION.
+    # See dozzle/README.md for images and choices.
+    image: amir20/dozzle:${DOZZLE_VERSION:?DOZZLE_VERSION must be set in .env}
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-UTC}
+      # nginx-proxy: the vhost is dozzle.<BASE_DOMAIN>; no host ports are
+      # published, the proxy owns all public endpoints.
+      VIRTUAL_HOST: *dozzle-host
+      VIRTUAL_PORT: "8080"
+      LETSENCRYPT_HOST: *dozzle-host
+      # Name shown in the dozzle header and multi-host menu.
+      DOZZLE_HOSTNAME: ${DOZZLE_HOSTNAME:-dozzle}
+      # Log verbosity: debug | info | warn | error.
+      DOZZLE_LEVEL: ${DOZZLE_LEVEL:-info}
+      # none = no login (LAN-only posture); simple = login via /data/users.yml.
+      # See dozzle/README.md "Authentication".
+      DOZZLE_AUTH_PROVIDER: ${DOZZLE_AUTH_PROVIDER:-none}
+    # Homepage (gethomepage.dev) auto-discovery labels.
+    labels:
+      homepage.group: Monitoring
+      homepage.name: Dozzle
+      homepage.icon: dozzle
+      homepage.href: *dozzle-href
+      homepage.description: Real-time container log viewer
+      homepage.weight: -70
+      homepage.showStats: true
+    volumes:
+      # Docker socket, read-only. Spec rule 7 special case (docker socket):
+      # dozzle enumerates containers and streams logs through it, and needs no
+      # write access.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # User settings, notification rules and users.yml (simple auth) persist
+      # in a standard named volume; no host bind mounts for stateful data.
+      - dozzle-data:/data
+    expose:
+      - "8080"
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external: true
+    name: ${NGINX_PROXY_NETWORK:?NGINX_PROXY_NETWORK must be set in .env}
+
+volumes:
+  dozzle-data:

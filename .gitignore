@@ -1,0 +1,5 @@
+# Local configuration - never commit (copy from env.example)
+.env
+
+# IDE
+.idea/
